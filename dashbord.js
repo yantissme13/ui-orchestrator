@@ -3,10 +3,13 @@ const axios = require('axios');
 const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
+require('dotenv').config(); // pour lire le fichier .env si tu es en local
+const ORCHESTRATOR_URL = process.env.ORCHESTRATOR_URL || "http://localhost:4000";
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 
+let donneesRecues = {};
 
 // Proxy API vers l’orchestrateur :
 app.get('/api/status', async (req, res) => {
@@ -33,12 +36,14 @@ app.listen(PORT, () => {
     console.log(`🌐 Interface disponible sur http://localhost:${PORT}`);
 });
 
-app.use(express.json());
 
 app.post('/orchestrator/update', (req, res) => {
-  console.log("📥 Données reçues :", req.body);
-  res.json({ status: "success", message: "Données bien reçues ✅" });
+    const data = req.body;
+    donneesRecues[data.bookmaker] = data; // on sauvegarde par bookmaker
+    console.log("📥 Données reçues :", data);
+    res.json({ status: "success", message: "Données bien reçues ✅" });
 });
+
 
 app.post('/orchestrator/update-solde', (req, res) => {
     const { bookmaker, solde } = req.body;

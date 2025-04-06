@@ -1,7 +1,7 @@
 // ✅ Solution compatible Node 22+ en CommonJS
 const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
 
-const URL = "http://localhost:3000/orchestrator/update";
+const URL = "https//ui-orchestrator-production.up.railway.app/orchestrator/update";
 
 const data = {
   bookmaker: "Unibet",
