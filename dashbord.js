@@ -40,3 +40,18 @@ app.post('/orchestrator/update', (req, res) => {
   console.log("📥 Données reçues :", req.body);
   res.json({ status: "success", message: "Données bien reçues ✅" });
 });
+
+app.post('/orchestrator/update-solde', (req, res) => {
+    const { bookmaker, solde } = req.body;
+
+    if (!bookmaker || typeof solde !== 'number') {
+        return res.status(400).send({ error: "Paramètres invalides" });
+    }
+
+    soldeParBookmaker[bookmaker] = solde;
+    console.log(`💾 Solde mis à jour pour ${bookmaker} : ${solde} €`);
+
+    envoyerDonneesAuDashboard(bookmaker); // 🆕 envoi après mise à jour
+
+    res.send({ message: "Solde mis à jour" });
+});
