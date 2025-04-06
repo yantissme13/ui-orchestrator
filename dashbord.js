@@ -7,7 +7,6 @@ const PORT = process.env.PORT || 3000;
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 
-const ORCHESTRATOR_URL = 'http://localhost:4000'; // à adapter sur Railway
 
 // Proxy API vers l’orchestrateur :
 app.get('/api/status', async (req, res) => {
