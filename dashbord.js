@@ -33,3 +33,10 @@ app.post('/api/toggle-bot', async (req, res) => {
 app.listen(PORT, () => {
     console.log(`🌐 Interface disponible sur http://localhost:${PORT}`);
 });
+
+app.use(express.json());
+
+app.post('/orchestrator/update', (req, res) => {
+  console.log("📥 Données reçues :", req.body);
+  res.json({ status: "success", message: "Données bien reçues ✅" });
+});
