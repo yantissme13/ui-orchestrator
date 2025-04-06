@@ -1,14 +1,16 @@
-require('dotenv').config();
-const axios = require('axios');
+import dotenv from 'dotenv';
+import fetch from 'node-fetch';
+import axios from 'axios';
 
-// 👉 À adapter : le nom de ta variable d’environnement Railway
+dotenv.config();
+
 const VARIABLE_NAME = 'ORCHESTRATOR_URL';
 
 async function updateNgrokUrlInRailway() {
   try {
-    // Étape 1 : Récupérer le tunnel actif
-    const ngrokResp = await axios.get('http://127.0.0.1:4040/api/tunnels');
-    const tunnels = ngrokResp.data.tunnels;
+    // 🔹 1. Récupérer le tunnel ngrok
+    const ngrokResp = await fetch('http://127.0.0.1:4040/api/tunnels');
+    const { tunnels } = await ngrokResp.json();
     const publicTunnel = tunnels.find(t => t.public_url && t.proto === 'https');
 
     if (!publicTunnel) {
@@ -18,25 +20,38 @@ async function updateNgrokUrlInRailway() {
     const newUrl = publicTunnel.public_url;
     console.log(`🔗 Tunnel ngrok détecté : ${newUrl}`);
 
-    // Étape 2 : Appeler Railway API pour mettre à jour la variable
-    const RAILWAY_PROJECT_ID = process.env.RAILWAY_PROJECT_ID;
-    const RAILWAY_TOKEN = process.env.RAILWAY_TOKEN;
+    const projectId = process.env.RAILWAY_PROJECT_ID;
+    const token = process.env.RAILWAY_TOKEN;
 
-    const response = await axios.put(
-      `https://backboard.railway.app/project/${RAILWAY_PROJECT_ID}/environment/production/variables`,
+    // 🔹 2. Mettre à jour la variable d’environnement
+    const response = await axios.patch(
+      `https://backboard.railway.app/graphql/v2`,
       {
-        [VARIABLE_NAME]: newUrl
+        query: `
+          mutation UpdateVariable {
+            environmentVariablesUpsert(input: {
+              projectId: "${projectId}",
+              environmentId: "production",
+              variables: [
+                { name: "${VARIABLE_NAME}", value: "${newUrl}" }
+              ]
+            }) {
+              id
+            }
+          }
+        `
       },
       {
         headers: {
-          Authorization: `Bearer ${RAILWAY_TOKEN}`
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
         }
       }
     );
 
     console.log(`✅ URL mise à jour avec succès dans Railway : ${VARIABLE_NAME} = ${newUrl}`);
   } catch (err) {
-    console.error("❌ Erreur pendant la mise à jour :", err.message);
+    console.error("❌ Erreur pendant la mise à jour :", err.response?.data || err.message);
   }
 }
 
