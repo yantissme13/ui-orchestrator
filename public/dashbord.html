@@ -68,7 +68,8 @@
   </table>
 
   <script>
-    const secret = localStorage.getItem("orchestrator_secret");
+    const secret = localStorage.getItem("token");
+
 
     async function fetchStatus() {
       const res = await fetch("/api/status", {
