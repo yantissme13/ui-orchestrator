@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard Orchestrateur</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f7f9fc;
+      margin: 0;
+      padding: 2rem;
+      color: #333;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 2rem;
+    }
+    th, td {
+      padding: 0.8rem;
+      border: 1px solid #ccc;
+      text-align: center;
+    }
+    th {
+      background-color: #e5e5e5;
+    }
+    input[type="number"] {
+      width: 80px;
+    }
+    button {
+      padding: 6px 10px;
+      cursor: pointer;
+      border: none;
+      background-color: #4CAF50;
+      color: white;
+      border-radius: 4px;
+    }
+    .off {
+      background-color: #f44336;
+    }
+  </style>
+</head>
+<body>
+  <h1>Dashboard Orchestrateur</h1>
+
+  <table id="dashboard-table">
+    <thead>
+      <tr>
+        <th>Bookmaker</th>
+        <th>Solde (€)</th>
+        <th>Mise totale (€)</th>
+        <th>Mise max (€)</th>
+        <th>Nb max paris</th>
+        <th>Nb paris effectués</th>
+        <th>Gains (€)</th>
+        <th>Bot actif</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody id="dashboard-body">
+      <!-- Rempli dynamiquement -->
+    </tbody>
+  </table>
+
+  <script>
+    const secret = localStorage.getItem("orchestrator_secret");
+
+    async function fetchStatus() {
+      const res = await fetch("/api/status", {
+        headers: {
+          Authorization: `Bearer ${secret}`
+        }
+      });
+      const data = await res.json();
+      return data;
+    }
+
+    function createButton(bookmaker, actif) {
+      const btn = document.createElement("button");
+      btn.textContent = actif ? "Désactiver" : "Activer";
+      btn.className = actif ? "off" : "";
+      btn.onclick = async () => {
+        await fetch("/api/toggle-bot", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ bookmaker, actif: !actif })
+        });
+        loadDashboard(); // Refresh
+      };
+      return btn;
+    }
+
+    async function loadDashboard() {
+      const data = await fetchStatus();
+
+      const tbody = document.getElementById("dashboard-body");
+      tbody.innerHTML = "";
+
+      for (const bookmaker of Object.keys(data.budgetParBookmaker)) {
+        const tr = document.createElement("tr");
+
+        const td1 = `<td>${bookmaker}</td>`;
+        const td2 = `<td>${data.soldeParBookmaker[bookmaker] ?? "?"}</td>`;
+        const td3 = `<td><input type="number" value="${data.budgetParBookmaker[bookmaker]}" onchange="updateStake('${bookmaker}', this.value)" /></td>`;
+        const td4 = `<td>${data.miseMaxParBookmaker[bookmaker]}</td>`;
+        const td5 = `<td>${data.nombreMaxParisParBookmaker[bookmaker]}</td>`;
+        const td6 = `<td>${data.nombreParisParBookmaker?.[bookmaker] || 0}</td>`;
+        const td7 = `<td>${data.gains?.[bookmaker] || 0}</td>`;
+        const td8 = `<td>${data.bots["bot_" + bookmaker.toLowerCase()]?.actif ? "🟢" : "🔴"}</td>`;
+
+        const td9 = document.createElement("td");
+        td9.appendChild(createButton(bookmaker, data.bots["bot_" + bookmaker.toLowerCase()]?.actif));
+
+        tr.innerHTML = td1 + td2 + td3 + td4 + td5 + td6 + td7 + td8;
+        tr.appendChild(td9);
+
+        tbody.appendChild(tr);
+      }
+    }
+
+    async function updateStake(bookmaker, stake) {
+      await fetch("/api/update-stake", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${secret}`
+        },
+        body: JSON.stringify({ bookmaker, stake: parseFloat(stake) })
+      });
+    }
+
+    loadDashboard();
+  </script>
+</body>
+</html>
