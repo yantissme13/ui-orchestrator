@@ -26,7 +26,7 @@ app.get('/', (req, res) => {
 });
 
 // Ensuite tu peux avoir les routes protégées comme :
-app.get('/dashboard.html', authMiddleware, (req, res) => {
+app.get('/dashboard.html', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'dashboard.html'));
 });
 let donneesRecues = {};
