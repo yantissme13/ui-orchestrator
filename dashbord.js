@@ -6,13 +6,18 @@ const PORT = process.env.PORT || 3000;
 require('dotenv').config(); // pour lire le fichier .env si tu es en local
 const ORCHESTRATOR_URL = process.env.ORCHESTRATOR_URL || "http://localhost:4000";
 
-app.get('/dashboard.html', authMiddleware, (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'dashboard.html'));
-});
-
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 
+// 🔁 Redirection racine → page de login
+app.get('/', (req, res) => {
+  res.redirect('/login.html');
+});
+
+// Ensuite tu peux avoir les routes protégées comme :
+app.get('/dashboard.html', authMiddleware, (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'dashboard.html'));
+});
 let donneesRecues = {};
 
 const config = {
