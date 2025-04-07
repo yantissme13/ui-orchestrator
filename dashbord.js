@@ -71,6 +71,16 @@ app.post('/api/toggle-bot', authMiddleware, async (req, res) => {
     res.send(response.data);
 });
 
+// 🔁 Réception des données depuis l’orchestrateur
+app.post('/orchestrator/update', (req, res) => {
+  const data = req.body;
+  console.log("📩 Données reçues depuis l’orchestrateur :", data);
+  // Tu peux stocker les données ici si besoin, ex :
+  donneesRecues = data;
+  res.send({ message: "✅ Données reçues" });
+});
+
+
 app.listen(PORT, () => {
     console.log(`🌐 Interface disponible sur http://localhost:${PORT}`);
 });
