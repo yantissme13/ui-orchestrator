@@ -57,7 +57,7 @@
     document.querySelector("#loginForm").addEventListener("submit", async (e) => {
       e.preventDefault();
       const password = document.querySelector("#password").value;
-
+	  console.log("🔐 Mot de passe saisi :", password);
       const res = await fetch("/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -66,6 +66,7 @@
 
       if (res.ok) {
         localStorage.setItem("token", password); // 🔐 enregistre le mot de passe en local
+		console.log("✅ Token enregistré dans localStorage :", password);
         window.location.href = "/dashboard.html";
       } else {
         document.getElementById("error").textContent = "Mot de passe incorrect !";

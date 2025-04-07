@@ -40,6 +40,7 @@ const config = {
 
 function authMiddleware(req, res, next) {
   const authHeader = req.headers.authorization;
+  console.log("🛡️ Header Authorization reçu :", authHeader);
 
   if (!authHeader) {
     return res.status(401).send({ error: "Aucune autorisation fournie" });
@@ -48,17 +49,22 @@ function authMiddleware(req, res, next) {
   const token = authHeader.split(" ")[1]; // format attendu : "Bearer motdepasse"
 
   if (token === process.env.ORCHESTRATOR_SECRET) {
+	console.log("✅ Mot de passe validé, accès autorisé !");
     next(); // ✅ Autorisé, on passe à la suite
   } else {
+	console.log("❌ Mot de passe invalide !");
     res.status(403).send({ error: "Mot de passe invalide" });
   }
 }
 
 app.post('/login', (req, res) => {
   const { password } = req.body;
+  console.log("🔐 Tentative de login avec :", password);
   if (password === process.env.ORCHESTRATOR_SECRET) {
+	console.log("✅ Login accepté !");
     res.send({ success: true });
   } else {
+	console.log("❌ Login refusé : mot de passe incorrect");
     res.status(403).send({ error: "Mot de passe incorrect" });
   }
 });
