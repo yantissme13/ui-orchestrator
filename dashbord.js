@@ -60,5 +60,5 @@ app.post('/api/toggle-bot', authMiddleware, async (req, res) => {
 });
 
 app.listen(PORT, () => {
-    console.log(`🌐 Interface disponible);
+    console.log(`🌐 Interface disponible sur http://localhost:${PORT}`);
 });
