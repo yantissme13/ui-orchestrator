@@ -17,6 +17,10 @@ const axiosOrchestrator = axios.create({
   }
 });
 
+console.log("📂 __dirname =", __dirname);
+console.log("📄 dashboard.html path =", path.resolve(__dirname, 'public', 'dashboard.html'));
+
+
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 
