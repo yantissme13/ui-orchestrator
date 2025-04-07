@@ -6,6 +6,13 @@ const PORT = process.env.PORT || 3000;
 require('dotenv').config(); // pour lire le fichier .env si tu es en local
 const ORCHESTRATOR_URL = process.env.ORCHESTRATOR_URL || "http://localhost:4000";
 
+const axiosOrchestrator = axios.create({
+  baseURL: ORCHESTRATOR_URL,
+  headers: {
+    'x-orchestrator-token': process.env.ORCHESTRATOR_SECRET
+  }
+});
+
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 
@@ -43,24 +50,24 @@ function authMiddleware(req, res, next) {
   }
 }
 
-// Proxy API vers l’orchestrateur :
+// 🔁 Routes proxy sécurisées
 app.get('/api/status', authMiddleware, async (req, res) => {
-    const response = await axios.get(`${ORCHESTRATOR_URL}/orchestrator/status`);
+    const response = await axiosOrchestrator.get('/orchestrator/status');
     res.send(response.data);
 });
 
 app.post('/api/update-stake', authMiddleware, async (req, res) => {
-    const response = await axios.post(`${ORCHESTRATOR_URL}/orchestrator/update-stake`, req.body);
+    const response = await axiosOrchestrator.post('/orchestrator/update-stake', req.body);
     res.send(response.data);
 });
 
 app.post('/api/update-solde', authMiddleware, async (req, res) => {
-    const response = await axios.post(`${ORCHESTRATOR_URL}/orchestrator/update-solde`, req.body);
+    const response = await axiosOrchestrator.post('/orchestrator/update-solde', req.body);
     res.send(response.data);
 });
 
 app.post('/api/toggle-bot', authMiddleware, async (req, res) => {
-    const response = await axios.post(`${ORCHESTRATOR_URL}/orchestrator/toggle-bot`, req.body);
+    const response = await axiosOrchestrator.post('/orchestrator/toggle-bot', req.body);
     res.send(response.data);
 });
 
