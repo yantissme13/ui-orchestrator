@@ -46,27 +46,31 @@
 <body>
   <div class="container">
     <h2>Authentification</h2>
-    <input type="password" id="password" placeholder="Mot de passe" />
-    <button onclick="login()">Se connecter</button>
+    <form id="loginForm">
+      <input type="password" id="password" placeholder="Mot de passe" required />
+      <button type="submit">Se connecter</button>
+    </form>
     <div id="error" class="error"></div>
   </div>
 
   <script>
-    async function login() {
-      const password = document.getElementById("password").value;
-      const res = await fetch("/orchestrator/status", {
-        headers: {
-          "Authorization": `Bearer ${password}`
-        }
+    document.querySelector("#loginForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const password = document.querySelector("#password").value;
+
+      const res = await fetch("/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password })
       });
 
       if (res.ok) {
-        localStorage.setItem("orchestrator_secret", password);
+        localStorage.setItem("token", password); // 🔐 enregistre le mot de passe en local
         window.location.href = "/dashboard.html";
       } else {
-        document.getElementById("error").textContent = "Mot de passe incorrect";
+        document.getElementById("error").textContent = "Mot de passe incorrect !";
       }
-    }
+    });
   </script>
 </body>
 </html>

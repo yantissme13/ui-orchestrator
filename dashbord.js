@@ -1,9 +1,13 @@
+require('dotenv').config(); // pour lire le fichier .env si tu es en local
+if (!process.env.ORCHESTRATOR_SECRET) {
+  console.error("❌ ERREUR : ORCHESTRATOR_SECRET non défini dans le .env !");
+  process.exit(1);
+}
 const express = require('express');
 const axios = require('axios');
 const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
-require('dotenv').config(); // pour lire le fichier .env si tu es en local
 const ORCHESTRATOR_URL = process.env.ORCHESTRATOR_URL || "http://localhost:4000";
 
 const axiosOrchestrator = axios.create({
@@ -50,6 +54,15 @@ function authMiddleware(req, res, next) {
   }
 }
 
+app.post('/login', (req, res) => {
+  const { password } = req.body;
+  if (password === process.env.ORCHESTRATOR_SECRET) {
+    res.send({ success: true });
+  } else {
+    res.status(403).send({ error: "Mot de passe incorrect" });
+  }
+});
+
 // 🔁 Routes proxy sécurisées
 app.get('/api/status', authMiddleware, async (req, res) => {
     const response = await axiosOrchestrator.get('/orchestrator/status');
@@ -64,6 +77,10 @@ app.post('/api/update-stake', authMiddleware, async (req, res) => {
 app.post('/api/update-solde', authMiddleware, async (req, res) => {
     const response = await axiosOrchestrator.post('/orchestrator/update-solde', req.body);
     res.send(response.data);
+});
+
+app.get('/api/last-update', authMiddleware, (req, res) => {
+  res.send(donneesRecues);
 });
 
 app.post('/api/toggle-bot', authMiddleware, async (req, res) => {
